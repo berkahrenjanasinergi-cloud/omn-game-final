@@ -42,10 +42,14 @@ input:focus{border-color:var(--b);box-shadow:0 0 20px #00e0ff55}
 .mc .f,.mc .b{position:absolute;inset:0;display:grid;place-items:center;border-radius:16px;backface-visibility:hidden;padding:4px;text-align:center;font-weight:700}
 .mc .f{background:linear-gradient(135deg,var(--a),var(--c));font-size:30px}.mc .b{background:#fff;color:#1a1640;transform:rotateY(180deg);font-size:15px}.mc.ok .b{background:var(--ok)}
 @media(max-width:520px){.rw{grid-template-columns:100px 1fr 40px}.lb{grid-template-columns:34px 1fr 60px 56px}}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}.opt{text-align:left;font-size:18px;padding:14px}.opt b{background:#fff3;border-radius:8px;padding:2px 9px;margin-right:6px}.opt:disabled{cursor:default;transform:none;opacity:1}
+.gv{position:relative;inset:auto;pointer-events:auto;width:100%;height:auto;border-radius:18px;display:block;touch-action:manipulation;box-shadow:0 8px 30px #0008}
+.tk{display:grid;grid-template-columns:70px 1fr 50px;gap:6px;align-items:center;font-size:13px}.tr{position:relative;height:30px;border-bottom:3px dashed #fff4;margin-bottom:2px}.tr::after{content:'🏁';position:absolute;right:0;top:0;font-size:22px}.tr span{position:absolute;top:-2px;font-size:24px;transition:left .6s}
+@media(max-width:520px){.opts{grid-template-columns:1fr}}
 </style></head><body><canvas id="stars"></canvas><canvas id="cf"></canvas><div class="wrap" id="app"></div>
 <script>
 /* ====== ISI DENGAN DATA SUPABASE KAMU (Project Settings > API) ====== */
-const SB_URL='https://rpeexxpvlibmittdabkf.supabase.co',SB_KEY='sb_publishable_VJm_5kNvMDt9FG7JLJf1Wg_R-cl9fLv';
+const SB_URL='',SB_KEY='';
 const sb=(SB_URL&&window.supabase)?supabase.createClient(SB_URL,SB_KEY):null;
 const $=s=>document.querySelector(s),r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,pick=a=>a[r(0,a.length-1)],sh=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
 const gcd=(a,b)=>b?gcd(b,a%b):a,lcm=(a,b)=>a/gcd(a,b)*b,rp=n=>'Rp'+n.toLocaleString('id-ID'),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
@@ -81,26 +85,26 @@ ger:{n:'Gerak & Pekerjaan',bab:'Gerak & Kerja',ic:'🚴',w:2,tip:'Jarak = kecepa
 kom:{n:'Pertandingan & Berlipat',bab:'Logika',ic:'⚽',w:2,tip:'n tim saling bertemu 1 kali: n(n−1)÷2. Menggandakan diri tiap tahap: 2 pangkat n.',g(){if(Math.random()<.5){const n=r(5,12);return[`${n} tim sepak bola saling bertemu satu kali. Berapa total pertandingan?`,n*(n-1)/2,H,`${n}×${n-1}÷2`]}const n=r(4,9);return[`Satu bakteri membelah menjadi 2 setiap jam. Berapa bakteri setelah ${n} jam?`,2**n,H,`2 pangkat ${n}`]}}
 };
 function wpick(ks){let x=Math.random()*ks.reduce((s,k)=>s+T[k].w,0);for(const k of ks){x-=T[k].w;if(x<=0)return k}return ks[0]}
-function genQ(c){for(let i=0;i<40;i++){const k=c.topic||wpick(Object.keys(T)),[q,a,lv,e]=T[k].g();if(!c.lv||lv==c.lv||i>35)return{k,q,a,lv,e}}}
+function genQ(c){const bk=BANK.filter(x=>(!c.topic||x.k==c.topic)&&(!c.lv||x.lv==c.lv));if(bk.length&&Math.random()<.5)return{...pick(bk)};for(let i=0;i<40;i++){const k=c.topic||wpick(Object.keys(T)),[q,a,lv,e]=T[k].g();if(!c.lv||lv==c.lv||i>35)return withCh({k,q,a,lv,e})}}
 /* ====== PENYIMPANAN (Supabase + cadangan lokal) ====== */
 async function save(row){const l=JSON.parse(localStorage.omn_scores||'[]');l.push({...row,created_at:new Date().toISOString()});localStorage.omn_scores=JSON.stringify(l.slice(-200));if(sb){try{await sb.from('scores').insert(row)}catch(e){}}}
 async function load(own){if(sb){try{let q=sb.from('scores').select('*').order(own?'created_at':'score',{ascending:false}).limit(own?300:15);if(own)q=q.eq('nickname',me);const{data,error}=await q;if(!error&&data)return data}catch(e){}}const l=JSON.parse(localStorage.omn_scores||'[]');return own?l.filter(x=>x.nickname==me):l.sort((a,b)=>b.score-a.score).slice(0,15)}
 /* ====== MENU ====== */
 const B=[{e:'🐲',n:'Naga Angka',lv:D},{e:'🦖',n:'T-Rex Pecahan',lv:M},{e:'👾',n:'Alien HOTS',lv:H}];
-const M2=[['⚡','Kuis Kilat','10 soal acak, jawab cepat, raih combo!',()=>play({mode:'kilat',n:10,sec:30})],['🐉','Boss Battle','Kalahkan monster dengan jawaban benar',()=>bossSel()],['🃏','Pasangan Ajaib','Cocokkan soal dengan jawabannya',()=>memory()],['📝','Simulasi Final','20 soal sesuai porsi kisi-kisi',()=>play({mode:'sim',n:20,sec:90})],['📚','Belajar & Progress','Tips tiap subtopik + penguasaan',()=>learn()],['🏆','Peringkat','Skor tertinggi',()=>board()]];
-function menu(){clearInterval(S.iv);const d=Math.ceil((new Date('2026-11-29T08:00')-Date.now())/864e5);
+const M2=[['🍄','Lompat Jawaban','Injak pijakan jawaban benar. Salah = jatuh ke lava!',()=>jump()],['🌐','Multiplayer Online','Balapan lompat jawaban bareng teman dari device mana pun',()=>lobby()],['⚡','Kuis Kilat','10 soal acak, jawab cepat, raih combo!',()=>play({mode:'kilat',n:10,sec:30})],['🐉','Boss Battle','Kalahkan monster dengan jawaban benar',()=>bossSel()],['🃏','Pasangan Ajaib','Cocokkan soal dengan jawabannya',()=>memory()],['📝','Simulasi Final','20 soal sesuai porsi kisi-kisi',()=>play({mode:'sim',n:20,sec:90})],['📚','Belajar & Progress','Tips tiap subtopik + penguasaan',()=>learn()],['🏆','Peringkat','Skor tertinggi',()=>board()],['🤖','Generator Soal AI','Isi bank soal otomatis (untuk orang tua)',()=>gen()]];
+function menu(){clearInterval(S.iv);window.__kd&&removeEventListener('keydown',window.__kd);if(CH&&sb){sb.removeChannel(CH);CH=null}const d=Math.ceil((new Date('2026-11-29T08:00')-Date.now())/864e5);
 view(`<div class="hero"><h1>OMN Quest 🚀</h1><p>Latihan Final OMN Mentari · SD Kelas 5</p><div class="chips"><span class="chip">👤 ${esc(me)} <a onclick="ask()">ubah</a></span><span class="chip">📅 ${d>0?'H-'+d+' menuju final':'Selamat bertanding!'}</span><span class="chip">${sb?'☁️ Supabase':'💾 Lokal'}</span><span class="chip" style="cursor:pointer" onclick="mute=!mute;menu()">${mute?'🔇':'🔊'}</span></div></div><div class="grid">${M2.map((m,i)=>`<div class="card mode" onclick="M2[${i}][3]()"><div class="ic">${m[0]}</div><h3>${m[1]}</h3><p>${m[2]}</p></div>`).join('')}</div>`)}
 function ask(){view(`<div class="card center"><h1>Halo, Juara! 👋</h1><p>Siapa nama panggilanmu?</p><div class="row"><input id="nm" maxlength="20" placeholder="Nama"><button class="btn" onclick="me=$('#nm').value.trim().slice(0,20)||'Juara';localStorage.omn_name=me;menu()">Mulai!</button></div></div>`)}
 function bossSel(){view(`<div class="top"><button class="btn g" onclick="menu()">← Menu</button><h2>🐉 Pilih Lawan</h2></div><div class="grid">${B.map((b,i)=>`<div class="card mode" onclick="play({mode:'boss',lv:B[${i}].lv,boss:B[${i}],hearts:3,sec:40})"><div class="ic">${b.e}</div><h3>${b.n}</h3><p>Soal level <b class="l${b.lv}">${b.lv}</b> · 3 nyawa ❤️</p></div>`).join('')}</div>`)}
 /* ====== MESIN KUIS (Kilat, Boss, Simulasi, Latihan Topik) ====== */
 function play(c){LAST=()=>play(c);S={cfg:c,i:0,score:0,streak:0,mx:0,ok:0,tot:0,hearts:c.hearts||0,hp:100,det:{}};next()}
 function next(){const c=S.cfg;if((c.n&&S.i>=c.n)||(c.boss&&S.hp<=0)||(c.hearts&&S.hearts<=0))return end();S.q=genQ(c);S.i++;S.t0=Date.now();S.done=false;draw();tick()}
-function draw(){const c=S.cfg,q=S.q;view(`<div class="card"><div class="top"><button class="btn g" onclick="menu()">✕</button><div class="chips"><span class="chip">⭐ ${S.score}</span><span class="chip">🔥 ${S.streak}</span>${c.hearts?`<span class="chip">${'❤️'.repeat(S.hearts)}${'🖤'.repeat(c.hearts-S.hearts)}</span>`:''}<span class="chip">${c.n?S.i+'/'+c.n:'Soal '+S.i}</span></div></div>${c.boss?`<div class="bossbox"><div id="boss" class="boss">${c.boss.e}</div><div class="bar"><i id="hp" style="width:${S.hp}%"></i></div><small>${c.boss.n}</small></div>`:''}<div class="bar"><i id="tm" class="tm"></i></div><div class="lv">${T[q.k].ic} ${T[q.k].n} · <b class="l${q.lv}">${q.lv}</b></div><div class="q">${q.q}</div><div class="row"><input id="ans" type="number" step="any" inputmode="decimal" placeholder="Jawabanmu…" autocomplete="off"><button class="btn" id="go">Jawab ➤</button></div><div id="fb"></div></div>`);$('#go').onclick=()=>{const v=$('#ans').value;if(v!=='')answer(v)};$('#ans').focus()}
+function draw(){const c=S.cfg,q=S.q;view(`<div class="card"><div class="top"><button class="btn g" onclick="menu()">✕</button><div class="chips"><span class="chip">⭐ ${S.score}</span><span class="chip">🔥 ${S.streak}</span>${c.hearts?`<span class="chip">${'❤️'.repeat(S.hearts)}${'🖤'.repeat(c.hearts-S.hearts)}</span>`:''}<span class="chip">${c.n?S.i+'/'+c.n:'Soal '+S.i}</span></div></div>${c.boss?`<div class="bossbox"><div id="boss" class="boss">${c.boss.e}</div><div class="bar"><i id="hp" style="width:${S.hp}%"></i></div><small>${c.boss.n}</small></div>`:''}<div class="bar"><i id="tm" class="tm"></i></div><div class="lv">${T[q.k].ic} ${T[q.k].n} · <b class="l${q.lv}">${q.lv}</b></div><div class="q">${q.q}</div><div class="opts">${q.ch.map((x,j)=>`<button class="btn opt" onclick="answer(${j})"><b>${'ABCD'[j]}</b> ${esc(x)}</button>`).join('')}</div><div id="fb"></div></div>`);0}
 function tick(){clearInterval(S.iv);const c=S.cfg;S.iv=setInterval(()=>{const l=c.sec-(Date.now()-S.t0)/1000,b=$('#tm');if(!b)return clearInterval(S.iv);b.style.width=Math.max(0,l/c.sec*100)+'%';b.style.background=l/c.sec<.25?'var(--bad)':'linear-gradient(90deg,var(--b),var(--a))';if(l<=0)answer(null)},100)}
-function answer(v){if(S.done)return;S.done=true;clearInterval(S.iv);const c=S.cfg,q=S.q,left=Math.max(0,c.sec-(Date.now()-S.t0)/1000),ok=v!==null&&Math.abs(parseFloat(v)-q.a)<1e-6,d=S.det[q.k]=S.det[q.k]||[0,0];d[1]++;S.tot++;let msg;
+function answer(v){if(S.done)return;S.done=true;clearInterval(S.iv);const c=S.cfg,q=S.q,left=Math.max(0,c.sec-(Date.now()-S.t0)/1000),ok=v!==null&&v===q.i,d=S.det[q.k]=S.det[q.k]||[0,0];d[1]++;S.tot++;let msg;
 if(ok){d[0]++;S.ok++;S.streak++;S.mx=Math.max(S.mx,S.streak);const p=10+Math.round(left/c.sec*10)+Math.min(S.streak,5)*2+({Dasar:0,Menengah:5,HOTS:10}[q.lv]||0);S.score+=p;if(c.boss){S.hp=Math.max(0,S.hp-(20+(left/c.sec>.5?10:0)+(q.lv==H?10:0)));$('#boss').classList.add('hit');$('#hp').style.width=S.hp+'%'}beep(660);setTimeout(()=>beep(880),90);msg=`<div class="fb ok">✅ Benar! +${p} poin${S.streak>=3?' · 🔥 combo x'+S.streak:''}</div>`}
-else{S.streak=0;if(c.hearts)S.hearts--;beep(180,.3,'sawtooth');msg=`<div class="fb bad">${v===null?'⏰ Waktu habis!':'❌ Belum tepat.'} Jawaban: <b>${q.a}</b></div>`}
-$('#fb').innerHTML=msg+`<div class="ex">💡 ${q.e}</div><button class="btn" id="nx">Lanjut ➤</button>`;$('#ans').disabled=true;$('#go').style.display='none';$('#nx').onclick=next}
+else{S.streak=0;if(c.hearts)S.hearts--;beep(180,.3,'sawtooth');msg=`<div class="fb bad">${v===null?'⏰ Waktu habis!':'❌ Belum tepat.'} Jawaban: <b>${esc(q.ch[q.i])}</b></div>`}
+$('#fb').innerHTML=msg+`<div class="ex">💡 ${q.e}</div><button class="btn" id="nx">Lanjut ➤</button>`;document.querySelectorAll('.opt').forEach((b,j)=>{b.disabled=true;b.style.background=j==q.i?'var(--ok)':j===v?'var(--bad)':''});$('#nx').onclick=next}
 function end(){const c=S.cfg,w=c.boss&&S.hp<=0,sc=S.score+(w?100+S.hearts*20:0);fin({mode:c.mode,score:sc,ok:S.ok,total:S.tot,det:S.det,extra:` · combo terbaik ${S.mx}`,title:c.boss?(w?'🏆 Boss Dikalahkan!':'💔 Boss Menang… Coba lagi!'):'🎉 Selesai!',st:w?3:undefined})}
 function fin(o){save({nickname:me,mode:o.mode,score:o.score,ok:o.ok,total:o.total,detail:o.det||{}});const a=o.total?o.ok/o.total:0,st=o.st??(a>=.9?3:a>=.7?2:a>=.4?1:0);if(st>=2)confetti();
 view(`<div class="card center"><h2>${o.title}</h2><div class="stars">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</div><div class="big">${o.score}</div><p>poin · ${o.ok}/${o.total} benar${o.extra||''}</p>${Object.entries(o.det||{}).map(([k,v])=>`<div class="rw"><span>${T[k].n}</span><div class="bar"><i style="width:${v[0]/v[1]*100}%"></i></div><small>${v[0]}/${v[1]}</small></div>`).join('')}<div class="row"><button class="btn" onclick="LAST()">🔁 Main lagi</button><button class="btn g" onclick="menu()">🏠 Menu</button></div></div>`)}
@@ -120,5 +124,74 @@ view(`<div class="top"><button class="btn g" onclick="menu()">← Menu</button><
 /* ====== PERINGKAT ====== */
 async function board(){view('<div class="card center">Memuat…</div>');const R=await load(0);view(`<div class="card"><div class="top"><button class="btn g" onclick="menu()">← Menu</button><h2>🏆 Peringkat</h2></div>${R.length?R.map((x,i)=>`<div class="lb"><span>${['🥇','🥈','🥉'][i]||i+1}</span><b>${esc(x.nickname)}</b><small>${esc(x.mode)}</small><b>${x.score}</b></div>`).join(''):'<p>Belum ada skor. Ayo main!</p>'}</div>`)}
 document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const b=$('#nx')||$('#go');if(b&&b.offsetParent){e.preventDefault();b.click()}});
+/* ====== v2: PILIHAN GANDA, BANK SOAL AI, LOMPAT JAWABAN, MULTIPLAYER ====== */
+let BANK=[],CH=null,MP={};
+const EM=['🦊','🐼','🐯','🐸','🦄','🐙','🚀','🦖'];
+function withCh(q){const a=q.a,m=10**Math.max(0,String(Math.abs(a)).length-2),s=new Set([a]);for(const v of sh([a+m,a-m,a+2*m,a-2*m,a+3*m,a*2,Math.round(a/2),a+1,a-1,a+2,a-2,a+10,a-10,a+5,a-5]))if(s.size<4&&v>=0&&Number.isInteger(v))s.add(v);while(s.size<4)s.add(a+r(11,40));const c=sh([...s]);q.ch=c.map(String);q.i=c.indexOf(a);return q}
+function getQs(n,c={}){const q=[],u=new Set();for(let t=0;q.length<n&&t<n*6;t++){const x=genQ(c);if(!u.has(x.q)){u.add(x.q);q.push(x)}}return q}
+async function loadBank(){if(!sb)return;try{const{count}=await sb.from('questions').select('id',{count:'exact',head:true});if(!count)return;const o=r(0,Math.max(0,count-200)),{data}=await sb.from('questions').select('*').range(o,o+199);BANK=(data||[]).filter(x=>Array.isArray(x.choices)&&x.choices.length==4&&T[x.topic]).map(x=>({k:x.topic,q:x.q,ch:x.choices.map(String),i:x.ans,lv:x.lv,e:x.expl||''}))}catch(e){}}
+addEventListener('keydown',e=>{if(S.q&&!S.done&&/^[1-4]$/.test(e.key)&&$('.opt'))answer(+e.key-1)});
+/* ---- mesin permainan platformer ---- */
+function runView(qs,o){clearInterval(S.iv);S={};if(!o.multi)MP={};const N=qs.length,tm0=Date.now(),det={};
+view(`<div class="card"><div class="top"><button class="btn g" onclick="menu()">✕</button><div class="chips"><span class="chip">❓ <span id="hq">1</span>/${N}</span><span class="chip">✅ <span id="hok">0</span></span>${o.lives?'<span class="chip" id="hl"></span>':''}<span class="chip">⏱️ <span id="ht">0</span>s</span></div></div>${o.multi?'<div id="trk"></div>':''}<div class="q" id="rq"></div><canvas id="gv" class="gv" width="760" height="380"></canvas><small>Tap pijakan atau tekan tombol 1-4</small><div id="rfb"></div></div>`);
+const cv=$('#gv'),g=cv.getContext('2d');let rowQ=null,i=0,ok=0,lives=o.lives||0,px=0,py=250,bx=0,by=250,wx=0,wy=250,vy=0,cx=-90,cy=0,st='ask',ch=-1,cor=-1,rev=false,u=0,ts=0,cr=0,dy=[0,0,0,0],fx=[],fl=0,sx=0,sy=0,tgt={},last=performance.now();
+const hud=()=>{$('#hok').textContent=ok;if(o.lives)$('#hl').textContent='❤️'.repeat(lives)+'🖤'.repeat(o.lives-lives)};
+const done=dead=>{st='end';const r={ok,total:i,time:Math.round((Date.now()-tm0)/1000),lives,det,dead};if(!dead)confetti();setTimeout(()=>o.onEnd(r),dead?900:1300)};
+function setQ(){ch=-1;cor=-1;rev=false;cr=0;$('#rfb').innerHTML='';bx=px;by=py;if(i>=N){tgt={x:px+230,y:py};sx=wx;sy=wy;u=0;st='jump';fl=1;$('#rq').textContent='🏁 Menuju garis finish!';return}
+dy=sh([-25,0,25,0]);const q=rowQ=qs[i];$('#hq').textContent=i+1;$('#rq').innerHTML=`<span class="lv"><b class="l${q.lv}">${q.lv}</b> · ${T[q.k].n}</span><br>${esc(q.q)}`;st='ask'}
+function pickJ(j){if(st!='ask'||!cv.isConnected)return;const q=qs[i],good=j==q.i,d=det[q.k]=det[q.k]||[0,0];d[1]++;if(good)d[0]++;ch=j;cor=q.i;rev=true;
+$('#rfb').innerHTML=`<div class="fb ${good?'ok':'bad'}">${good?'✅ Benar!':'❌ Salah! Jawaban benar: <b>'+esc(q.ch[q.i])+'</b>'}</div><div class="ex">💡 ${esc(q.e)}</div>`;
+tgt={x:bx+150+j*120,y:by+dy[j],good};sx=wx;sy=wy;u=0;st='jump';beep(good?660:220,.15,good?'sine':'sawtooth')}
+function land(){if(fl)return done(false);const good=tgt.good;i++;if(good){ok++;px=tgt.x;py=tgt.y;st='wait';ts=.9;beep(880,.1)}else{st='fall';vy=-260}hud();o.onProg&&o.onProg({i,ok})}
+function splash(){for(let k=0;k<22;k++)fx.push({x:wx,y:wy,vx:Math.random()*300-150,vy:-Math.random()*400,l:.8});beep(120,.3,'square');if(o.lives)lives--;hud();if(o.lives&&lives<=0)return done(true);wx=px;wy=py-330;vy=0;st='drop'}
+function upd(dt,now){cx+=(px-90-cx)*Math.min(1,dt*5);cy+=(py-250-cy)*Math.min(1,dt*5);
+if(st=='ask'){wx=px;wy=py-3*Math.sin(now/180)}
+else if(st=='jump'){u=Math.min(1,u+dt/.7);wx=sx+(tgt.x-sx)*u;wy=sy+(tgt.y-sy)*u-110*Math.sin(Math.PI*u);if(u>=1){wx=tgt.x;wy=tgt.y;land()}}
+else if(st=='fall'){vy+=1700*dt;wy+=vy*dt;cr+=dt*260;if(wy-cy>390)splash()}
+else if(st=='drop'){vy+=1700*dt;wy+=vy*dt;cr+=dt*260;if(wy>=py){wy=py;st='wait';ts=.35}}
+else if(st=='wait'){if((ts-=dt)<=0)setQ()}
+fx=fx.filter(p=>(p.l-=dt)>0);fx.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=900*dt})}
+const rr=(x,y,w,h,c)=>{g.fillStyle=c;g.beginPath();g.roundRect(x,y,w,h,9);g.fill()};
+function draw(now){const W=760,H=380;let gr=g.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#1b1464');gr.addColorStop(.55,'#8a3fa8');gr.addColorStop(1,'#ff8a5b');g.fillStyle=gr;g.fillRect(0,0,W,H);
+g.fillStyle='#ffe9a8';g.shadowColor='#ffe9a8';g.shadowBlur=40;g.beginPath();g.arc(610,85,32,0,7);g.fill();g.shadowBlur=0;
+[[.15,'#3a2478',190],[.3,'#51308f',130]].forEach(([f,c,h])=>{g.fillStyle=c;const m=(cx*f%190+190)%190;for(let k=-1;k<6;k++){const x=k*190-m;g.beginPath();g.moveTo(x,H-30);g.lineTo(x+95,H-30-h);g.lineTo(x+190,H-30);g.fill()}});
+const X=x=>x-cx,Y=y=>y-cy;
+g.fillStyle='#ffffff55';g.beginPath();g.roundRect(X(bx)-54,Y(by),108,26,9);g.fill();rr(X(bx)-54,Y(by),108,26,'#8a5a3c');rr(X(bx)-54,Y(by),108,9,'#58d06b');
+if(fl){const fx0=X(bx+230);rr(fx0-54,Y(by),108,26,'#8a5a3c');rr(fx0-54,Y(by),108,9,'#58d06b');g.fillStyle='#fff';g.fillRect(fx0+20,Y(by)-100,5,100);for(let a=0;a<4;a++)for(let b=0;b<3;b++){g.fillStyle=(a+b)%2?'#fff':'#111';g.fillRect(fx0+25+a*12,Y(by)-100+b*12,12,12)}}
+if(rowQ&&!fl)for(let j=0;j<4;j++){const x=X(bx+150+j*120),good=rev&&j==cor,bad=rev&&j==ch&&ch!=cor;let y=Y(by+dy[j])+(bad?cr:0);if(bad&&cr>300)continue;
+g.save();if(good){g.shadowColor='#2ee59d';g.shadowBlur=30}
+rr(x-54,y,108,32,good?'#1fae74':bad?'#c93c4c':'#8a5a3c');rr(x-54,y,108,10,good?'#2ee59d':bad?'#ff5c6c':'#58d06b');g.restore();
+const s=String(rowQ.ch[j]);let f=20;do{g.font=`700 ${f}px 'Baloo 2',sans-serif`}while(g.measureText(s).width>96&&--f>10);g.fillStyle='#fff';g.textAlign='center';g.fillText(s,x,y+27);
+g.fillStyle='#ffffffcc';g.font="700 14px 'Baloo 2',sans-serif";g.fillText(j+1,x,y-8)}
+const lv=g.createLinearGradient(0,340,0,H);lv.addColorStop(0,'#ffc233');lv.addColorStop(1,'#ff3d1f');g.fillStyle=lv;g.beginPath();g.moveTo(0,H);for(let x=0;x<=W;x+=20)g.lineTo(x,352+6*Math.sin(x/30+now/300));g.lineTo(W,H);g.fill();
+fx.forEach(p=>{g.fillStyle='#ffb347';g.beginPath();g.arc(X(p.x),Y(p.y),4,0,7);g.fill()});
+g.font='42px serif';g.textAlign='center';g.fillText(o.em,X(wx),Y(wy)-4)}
+cv.onpointerdown=e=>{const b=cv.getBoundingClientRect(),k=760/b.width,x=(e.clientX-b.left)*k+cx,y=(e.clientY-b.top)*k+cy;for(let j=0;j<4;j++)if(Math.abs(x-(bx+150+j*120))<64&&y>by+dy[j]-70&&y<by+dy[j]+60){pickJ(j);break}};
+window.__kd&&removeEventListener('keydown',window.__kd);window.__kd=e=>{if(/^[1-4]$/.test(e.key))pickJ(+e.key-1)};addEventListener('keydown',window.__kd);
+function frame(now){if(!cv.isConnected){removeEventListener('keydown',window.__kd);return}const dt=Math.min(.05,(now-last)/1000);last=now;upd(dt,now);draw(now);$('#ht')&&($('#ht').textContent=Math.round((Date.now()-tm0)/1000));requestAnimationFrame(frame)}
+hud();if(o.multi)trk();setQ();requestAnimationFrame(frame)}
+/* ---- solo ---- */
+function jump(){LAST=jump;runView(getQs(12),{lives:3,em:pick(EM),onEnd:r=>fin({mode:'jump',title:r.dead?'💀 Jatuh ke lava! Coba lagi':'🏁 Sampai Garis Finish!',score:r.ok*100+r.lives*30+Math.max(0,240-r.time*2),ok:r.ok,total:r.total,det:r.det,extra:` · ${r.time} detik`})})}
+/* ---- multiplayer online (Supabase Realtime) ---- */
+function trk(){const e=$('#trk');if(!e)return;e.innerHTML=Object.values(MP).map(p=>`<div class="tk"><span>${esc(p.name)}</span><div class="tr"><span style="left:calc(${Math.min(100,p.i/12*100)}% - ${p.i/12*28}px)">${p.em}</span></div><b>✅${p.ok}</b></div>`).join('')}
+function lobby(){if(!sb)return alert('Multiplayer butuh Supabase. Isi SB_URL dan SB_KEY di index.html dulu.');view(`<div class="top"><button class="btn g" onclick="menu()">← Menu</button><h2>🌐 Multiplayer</h2></div><div class="card center"><h3>Buat ruangan baru</h3><div class="row"><button class="btn" onclick="room(Array.from({length:4},()=>'ABCDEFGHJKLMNPQRSTUVWXYZ'[r(0,23)]).join(''),1)">➕ Buat Ruangan</button></div></div><div class="card center"><h3>Gabung ruangan teman</h3><div class="row"><input id="rc" maxlength="4" placeholder="KODE" style="text-transform:uppercase"><button class="btn" onclick="$('#rc').value.length==4&&room($('#rc').value.toUpperCase(),0)">Gabung</button></div></div>`)}
+function rank(){const L=Object.values(MP).sort((a,b)=>b.ok-a.ok||(a.done&&b.done?a.t-b.t:b.done-a.done)),all=L.every(p=>p.done);if(all&&!S.saved){S.saved=1;confetti();const m=S.mine||{};save({nickname:me,mode:'multi',score:(m.ok||0)*100,ok:m.ok||0,total:m.total||12,detail:m.det||{}})}
+view(`<div class="card center"><h2>${all?'🏆 Hasil Akhir':'⏳ Menunggu pemain lain…'}</h2>${L.map((p,k)=>`<div class="lb" style="grid-template-columns:40px 1fr 70px 60px"><span>${['🥇','🥈','🥉'][k]||k+1}</span><b>${p.em} ${esc(p.name)}</b><small>${p.done?p.t+'s':p.i+'/12'}</small><b>✅ ${p.ok}</b></div>`).join('')}<div class="row"><button class="btn g" onclick="menu()">🏠 Menu</button></div></div>`)}
+function room(code,host){const id=Math.random().toString(36).slice(2,8),em=pick(EM);let pl={},go=false;MP={};
+const ui=()=>view(`<div class="top"><button class="btn g" onclick="menu()">← Keluar</button><h2>Ruangan</h2></div><div class="card center"><p>Bagikan kode ini ke temanmu:</p><div class="big">${code}</div><small>Buka alamat web yang sama di device lain → Multiplayer → Gabung</small></div><div class="card"><h3>Pemain (${Object.keys(pl).length})</h3>${Object.values(pl).map(p=>`<div class="lb" style="grid-template-columns:40px 1fr"><span>${p.em}</span><b>${esc(p.name)}</b></div>`).join('')}${host?'<div class="row"><button class="btn" id="st">▶ Mulai Balapan</button></div>':'<p class="center">Menunggu tuan rumah memulai…</p>'}</div>`);
+CH=sb.channel('omn-'+code,{config:{broadcast:{self:true},presence:{key:id}}});const ch=CH,send=x=>ch.send({type:'broadcast',event:'prog',payload:{id,name:me,em,...x}});
+function start(qs){S={};runView(qs,{multi:1,em,onProg:x=>send({i:x.i,ok:x.ok,done:0}),onEnd:r=>{send({i:r.total,ok:r.ok,done:1,t:r.time});S.rv=1;S.mine=r;rank()}})}
+function count(qs){let n=3;const t=()=>{if(n<0)return start(qs);view(`<div class="card center"><h2>Bersiap!</h2><div class="big">${n||'GO!'}</div></div>`);beep(n?440:880,.2);n--;setTimeout(t,900)};t()}
+ch.on('presence',{event:'sync'},()=>{pl={};Object.entries(ch.presenceState()).forEach(([k,v])=>pl[k]=v[0]);if(!go){ui();const b=$('#st');if(b)b.onclick=()=>ch.send({type:'broadcast',event:'start',payload:{qs:getQs(12),ids:Object.keys(pl)}})}})
+.on('broadcast',{event:'start'},({payload})=>{if(go)return;go=true;payload.ids.forEach(k=>MP[k]={id:k,name:pl[k]?.name||'?',em:pl[k]?.em||'🙂',i:0,ok:0,done:0});count(payload.qs)})
+.on('broadcast',{event:'prog'},({payload})=>{MP[payload.id]=payload;trk();if(S.rv)rank()})
+.subscribe(async s=>{if(s==='SUBSCRIBED')await ch.track({name:me,em})})}
+/* ---- generator soal AI (Supabase Edge Function) ---- */
+async function gen(){if(!sb)return alert('Butuh Supabase. Isi SB_URL dan SB_KEY dulu.');const k=prompt('Kata sandi admin (ADMIN_KEY yang kamu set di Supabase):');if(!k)return;const n=+prompt('Berapa putaran? (1 putaran ≈ 40 soal)','3')||1;
+view(`<div class="card center"><h2>🤖 Membuat soal dengan AI…</h2><p id="gs">0 soal tersimpan</p><button class="btn g" onclick="menu()">← Menu</button></div>`);let tot=0;
+for(let x=0;x<n;x++){const tp=sh(Object.keys(T)).slice(0,4).map(z=>({k:z,n:T[z].n,tip:T[z].tip}));try{const{data,error}=await sb.functions.invoke('generate-questions',{body:{admin:k,topics:tp,count:10}});if(error)throw error;if(data.error)throw new Error(data.error);tot+=data.inserted||0;$('#gs').textContent=tot+' soal tersimpan (putaran '+(x+1)+'/'+n+')'}catch(e){$('#gs').textContent='Gagal: '+(e.message||e);return}}
+$('#gs').textContent='Selesai! '+tot+' soal baru masuk bank soal.';loadBank()}
+loadBank();
+
 me?menu():ask();
 </script></body></html>
