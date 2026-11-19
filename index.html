@@ -49,7 +49,7 @@ input:focus{border-color:var(--b);box-shadow:0 0 20px #00e0ff55}
 </style></head><body><canvas id="stars"></canvas><canvas id="cf"></canvas><div class="wrap" id="app"></div>
 <script>
 /* ====== ISI DENGAN DATA SUPABASE KAMU (Project Settings > API) ====== */
-const SB_URL='https://rpeexxpvlibmittdabkf.supabase.co',SB_KEY='sb_publishable_VJm_5kNvMDt9FG7JLJf1Wg_R-cl9fLv';
+const SB_URL='https://rpeexxpvlibmittdabkf.supabase.co',SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJwZWV4eHB2bGlibWl0dGRhYmtmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUwNjgxNTAsImV4cCI6MjExMDY0NDE1MH0.zRnhlFUz7QEhU9SYmVdtLHupgc5V9M4UPYuVrzr8TTg';
 const sb=(SB_URL&&window.supabase)?supabase.createClient(SB_URL,SB_KEY):null;
 const $=s=>document.querySelector(s),r=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,pick=a=>a[r(0,a.length-1)],sh=a=>a.map(x=>[Math.random(),x]).sort((p,q)=>p[0]-q[0]).map(x=>x[1]);
 const gcd=(a,b)=>b?gcd(b,a%b):a,lcm=(a,b)=>a/gcd(a,b)*b,rp=n=>'Rp'+n.toLocaleString('id-ID'),esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
